@@ -5,9 +5,17 @@ URL="https://developers.google.com/android/images"
 # (i.e. unsupported devices, non-devices, etc etc)
 URLCONTENT=$(curl $URL)
 
-DEVICES="crosshatch blueline taimen walleye marlin sailfish ryu angler bullhead crosshatch blueline taimen walleye marlin sailfish ryu angler bullhead"
+# supported devices list
+DEVICES="crosshatch blueline taimen walleye marlin sailfish ryu angler bullhead"
 
-# fetch ALL build id's of all devices, and store them
+# fetch ALL build id's of all devices, and check if there is a new one
 for devices in $DEVICES; do
-    echo "$URLCONTENT" | sed -n 's/<tr id="'"$devices"'//p' | sed -n 's/">//p' | cut -d ' ' -f 3 > ./devices/$devices/build_ids
+    BUILDID_FILE="./devices/$devices/build_ids"
+    OLD_BUILDIDS=$(cat $BUILDID_FILE)
+    NEW_BUILDIDS=$(echo "$URLCONTENT" | sed -n 's/<tr id="'"$devices"'//p' | sed -n 's/">//p' | cut -d ' ' -f 3)
+    if [[ "$OLD_BUILDIDS" != "$NEW_BUILDIDS" ]]; then
+        NEW_BUILDID=$(diff -u <(echo "$OLD_BUILDIDS") <(echo "$NEW_BUILDIDS") | sed -n '1!p' | sed -n 's/^-//p')
+        #./tg_bot "$devices: fake new build id is $NEW_BUILDID"
+        echo "$NEW_BUILDIDS" > $BUILDID_FILE
+    fi
 done
