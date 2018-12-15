@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+URL="https://developers.google.com/android/images"
+
+# fetch all devices and remove the stuff we don't want
+# (i.e. unsupported devices, non-devices, etc etc)
+URLCONTENT=$(curl $URL)
+
+DEVICES="crosshatch blueline taimen walleye marlin sailfish ryu angler bullhead crosshatch blueline taimen walleye marlin sailfish ryu angler bullhead"
+
+# fetch ALL build id's of all devices, and store them
+for devices in $DEVICES; do
+    echo "$URLCONTENT" | sed -n 's/<tr id="'"$devices"'//p' | sed -n 's/">//p' | cut -d ' ' -f 3 > ./devices/$devices/build_ids
+done
