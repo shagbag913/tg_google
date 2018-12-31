@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-TOKEN=791403579:AAHwmaSLni3OK3yIBZY1OVFr3Uo568s6K8k
-CHAT_ID="-1001424244499"
-MESSAGE="$1"
-URL="https://api.telegram.org/bot$TOKEN/sendMessage"
-
-curl -s -X POST $URL -d chat_id=$CHAT_ID -d parse_mode="Markdown" -d text="$MESSAGE"
