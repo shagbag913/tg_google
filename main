@@ -26,6 +26,4 @@ for device in $DEVICES; do
     fi
 done
 
-if [[ -n $MESSAGE ]]; then
-    tg_bot -p pm -m "$MESSAGE"
-fi
+tg_bot -p pm -m "$MESSAGE"
