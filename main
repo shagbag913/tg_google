@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-## EXIT CODES
-# 0: Updates were found
-# 20: Updates were not found
-
 URL="https://developers.google.com/android/images"
 
 # fetch all devices and remove the stuff we don't want
