@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+echo "Checking for factory image update..."
+
+until ./main &>/dev/null; do
+    echo "No factory image updates available!"
+    sleep 10
+done
+
+echo "Factory image updates found!"
