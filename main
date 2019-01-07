@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 
-URL="https://developers.google.com/android/images"
-URLCONTENT=$(curl $URL)
+FACTURL="https://developers.google.com/android/images"
+OTAURL="https://developers.google.com/android/ota"
+FACTURLCONTENT=$(curl $FACTURL)
+OTAURLCONTENT=$(curl $OTAURL)
 DEVICES="crosshatch blueline taimen walleye marlin sailfish ryu angler bullhead"
 
-# fetch ALL build id's of all devices, and check if there is a new one
 build_id() {
     BUILDID_FILE="./devices/$1/build_ids"
     OLD_BUILDIDS=$(cat $BUILDID_FILE)
-    NEW_BUILDIDS=$(echo "$URLCONTENT" | sed -n 's/<tr id="'"$1"'//p' | sed -n 's/">//p' | cut -d ' ' -f 3)
+    NEW_BUILDIDS=$(echo "$FACTURLCONTENT" | sed -n 's/<tr id="'"$1"'//p' | sed -n 's/">//p' | cut -d ' ' -f 3)
     if [[ "$OLD_BUILDIDS" != "$NEW_BUILDIDS" && -n "$NEW_BUILDIDS" ]]; then
         NEW_BUILDID=$(diff -u <(echo "$NEW_BUILDIDS") <(echo "$OLD_BUILDIDS") | sed -n '1!p' | sed -n 's/^-//p')
-        NEW_BUILDURL=$(echo "$URLCONTENT" |grep $1 | grep $NEW_BUILDID | grep https| sed -n 's/<td><a href="//;s/"//p' | tr -d ' ')
         echo "$NEW_BUILDIDS" > $BUILDID_FILE
     else
         return 1
@@ -20,7 +20,9 @@ build_id() {
 
 for device in $DEVICES; do
     if build_id $device; then
-        MESSAGE+="*$device*: $NEW_BUILDID has been released.%0A    - Factory image: [Download]($NEW_BUILDURL)"
+        FACT_BUILDURL=$(echo "$FACTURLCONTENT" | sed -n 's/.*<td><a href=\"//p' | tr -d '"' | grep "$device-$NEW_BUILDID")
+        OTA_BUILDURL=$(echo "$OTAURLCONTENT" | sed -n 's/.*<td><a href=\"//p' | sed -n 's/">.*//p' | grep "$device-ota-$NEW_BUILDID")
+        MESSAGE+="*$device*: \`$NEW_BUILDID\` has been released.%0A    - Factory image: [Download]($FACT_BUILDURL)%0A    - OTA: [Download]($OTA_BUILDURL)%0A%0A"
     fi
 done
 
