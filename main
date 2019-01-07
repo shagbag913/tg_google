@@ -17,7 +17,7 @@ for devices in $DEVICES; do
     if [[ "$OLD_BUILDIDS" != "$NEW_BUILDIDS" && -n "$NEW_BUILDIDS" ]]; then
         NEW_BUILDID=$(diff -u <(echo "$NEW_BUILDIDS") <(echo "$OLD_BUILDIDS") | sed -n '1!p' | sed -n 's/^-//p')
         NEW_BUILDURL=$(echo "$URLCONTENT" |grep $devices | grep $NEW_BUILDID | grep https| sed -n 's/<td><a href="//;s/"//p' | tr -d ' ')
-        tg_bot -p au -m "*$devices*: '$NEW_BUILDID' is available for download! [Download here]($NEW_BUILDURL)"
+        tg_bot -p pm -m "*$devices*: '$NEW_BUILDID' is available for download! [Download here]($NEW_BUILDURL)"
         echo "$NEW_BUILDIDS" > $BUILDID_FILE
     fi
 done
