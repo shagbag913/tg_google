@@ -23,11 +23,5 @@ for devices in $DEVICES; do
         NEW_BUILDURL=$(echo "$URLCONTENT" |grep $devices | grep $NEW_BUILDID | grep https| sed -n 's/<td><a href="//;s/"//p' | tr -d ' ')
         tg_bot -p au -m "*$devices*: '$NEW_BUILDID' is available for download! [Download here]($NEW_BUILDURL)"
         echo "$NEW_BUILDIDS" > $BUILDID_FILE
-    else
-        NOUPDATES=true
     fi
 done
-
-if [[ $NOTUPDATES = true ]]; then
-    exit 20
-fi
