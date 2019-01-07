@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+
+## EXIT CODES
+# 0: Updates were found
+# 20: Updates were not found
+
 URL="https://developers.google.com/android/images"
 
 # fetch all devices and remove the stuff we don't want
@@ -13,10 +18,16 @@ for devices in $DEVICES; do
     BUILDID_FILE="./devices/$devices/build_ids"
     OLD_BUILDIDS=$(cat $BUILDID_FILE)
     NEW_BUILDIDS=$(echo "$URLCONTENT" | sed -n 's/<tr id="'"$devices"'//p' | sed -n 's/">//p' | cut -d ' ' -f 3)
-    if [[ "$OLD_BUILDIDS" != "$NEW_BUILDIDS" ]]; then
+    if [[ "$OLD_BUILDIDS" != "$NEW_BUILDIDS" && -n "$NEW_BUILDIDS" ]]; then
         NEW_BUILDID=$(diff -u <(echo "$NEW_BUILDIDS") <(echo "$OLD_BUILDIDS") | sed -n '1!p' | sed -n 's/^-//p')
         NEW_BUILDURL=$(echo "$URLCONTENT" |grep $devices | grep $NEW_BUILDID | grep https| sed -n 's/<td><a href="//;s/"//p' | tr -d ' ')
         tg_bot -p au -m "*$devices*: '$NEW_BUILDID' is available for download! [Download here]($NEW_BUILDURL)"
         echo "$NEW_BUILDIDS" > $BUILDID_FILE
+    else
+        NOUPDATES=true
     fi
 done
+
+if [[ $NOTUPDATES = true ]]; then
+    exit 20
+fi
