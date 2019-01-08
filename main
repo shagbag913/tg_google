@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# UNOBVIOUS DEPENDENCIES:
+# tg_bot; from my dotfiles repo https://github.com/shagbag913/dotfiles/blob/master/.bin/tg_bot
+
 FACTURL="https://developers.google.com/android/images"
 OTAURL="https://developers.google.com/android/ota"
 FACTURLCONTENT=$(curl $FACTURL)
