@@ -65,5 +65,5 @@ for repo in "${REPOS[@]}"; do
 done
 
 if [[ -n $MSG ]]; then
-    tg_bot -p pm -p au -m "$MSG"
+    tg_bot -p au -m "$MSG"
 fi
