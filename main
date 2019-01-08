@@ -5,9 +5,11 @@ OTAURL="https://developers.google.com/android/ota"
 FACTURLCONTENT=$(curl $FACTURL)
 OTAURLCONTENT=$(curl $OTAURL)
 DEVICES="crosshatch blueline taimen walleye marlin sailfish ryu angler bullhead"
+GOOGLEGIT="https://android.googlesource.com"
 
 build_id() {
     BUILDID_FILE="./devices/$1/build_ids"
+    [[ -f $(dirname $BUILDID_FILE) ]] || mkdir -p $(dirname $BUILDID_FILE)
     OLD_BUILDIDS=$(cat $BUILDID_FILE)
     NEW_BUILDIDS=$(echo "$FACTURLCONTENT" | sed -n 's/<tr id="'"$1"'//p' | sed -n 's/">//p' | cut -d ' ' -f 3)
     if [[ "$OLD_BUILDIDS" != "$NEW_BUILDIDS" && -n "$NEW_BUILDIDS" ]]; then
@@ -18,12 +20,50 @@ build_id() {
     fi
 }
 
+tags() {
+    TAG_FILE="./tags/$1/tags"
+    [[ -f $(dirname $TAG_FILE) ]] || mkdir -p $(dirname $TAG_FILE)
+    OLD_TAGS=$(cat $TAG_FILE)
+    NEW_TAGS=$(git ls-remote --refs --tags $GOOGLEGIT/$1 | sed -n 's/.*refs\/tags\///p')
+    if [[ "$NEW_TAGS" != "$OLD_TAGS" && -n "$NEW_TAGS" ]]; then
+        NEW_TAG=$(diff -u <(echo "$NEW_TAGS") <(echo "$OLD_TAGS") | sed -n '1!p' | sed -n 's/^-//p')
+        echo "$NEW_TAGS" > $TAG_FILE
+    else
+        return 1
+    fi
+}
+
 for device in $DEVICES; do
     if build_id $device; then
-        FACT_BUILDURL=$(echo "$FACTURLCONTENT" | sed -n 's/.*<td><a href=\"//p' | tr -d '"' | grep "$device-$NEW_BUILDID")
-        OTA_BUILDURL=$(echo "$OTAURLCONTENT" | sed -n 's/.*<td><a href=\"//p' | sed -n 's/">.*//p' | grep "$device-ota-$NEW_BUILDID")
-        MESSAGE+="*$device*: \`$NEW_BUILDID\` has been released.%0A    - Factory image: [Download]($FACT_BUILDURL)%0A    - OTA: [Download]($OTA_BUILDURL)%0A%0A"
+        for id in $NEW_BUILDID; do
+            FACT_BUILDURL=$(echo "$FACTURLCONTENT" | sed -n 's/.*<td><a href=\"//p' | tr -d '"' | grep "$device-$id")
+            OTA_BUILDURL=$(echo "$OTAURLCONTENT" | sed -n 's/.*<td><a href=\"//p' | sed -n 's/">.*//p' | grep "$device-ota-$id")
+            MSG="\`$id\` has been released.%0A    - Factory image: [Download]($FACT_BUILDURL)%0A    - OTA: [Download]($OTA_BUILDURL)%0A$MSG"
+        done
+        MSG="%0A*$device*%0A$MSG"
     fi
 done
 
-tg_bot -p pm -m "$MESSAGE"
+REPOS=(
+    'platform/manifest'
+    'kernel/msm'
+    'device/google/marlin'
+    'device/google/crosshatch'
+    'device/google/crosshatch-sepolicy'
+    'device/google/wahoo'
+    'device/google/taimen'
+    'device/google/muskie'
+)
+
+for repo in "${REPOS[@]}"; do
+    if tags $repo; then
+        for tag in $NEW_TAG; do
+            MSG="    - New tag! [$tag]($GOOGLEGIT/$repo/%2B/$tag)%0A$MSG"
+        done
+        MSG="%0A*$repo*%0A$MSG"
+    fi
+done
+
+if [[ -n $MSG ]]; then
+    tg_bot -p pm -p au -m "$MSG"
+fi
