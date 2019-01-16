@@ -70,7 +70,7 @@ for repo in "${REPOS[@]}"; do
 done
 
 if [[ -n $MSG ]]; then
-    tg_bot -p pm -m "$MSG"
+    tg_bot -p pm -p au -m "$MSG"
 fi
 
 if [[ -n $FACTIMAGE_URLS ]]; then
