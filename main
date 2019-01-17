@@ -29,7 +29,7 @@ tags() {
     OLD_TAGS=$(cat $TAG_FILE)
     NEW_TAGS=$(git ls-remote --refs --tags $GOOGLEGIT/$1 | sed -n 's/.*refs\/tags\///p')
     if [[ "$NEW_TAGS" != "$OLD_TAGS" && -n "$NEW_TAGS" ]]; then
-        NEW_TAG=$(diff -u <(echo "$NEW_TAGS") <(echo "$OLD_TAGS") | tail -n +3 | sed -n 's/^-//p')
+        NEW_TAG=$(diff -u <(echo "$NEW_TAGS") <(echo "$OLD_TAGS") | tail -n +3 | grep -e ^- -e ^+)
         echo "$NEW_TAGS" > $TAG_FILE
     else
         return 1
@@ -63,7 +63,11 @@ REPOS=(
 for repo in "${REPOS[@]}"; do
     if tags $repo; then
         for tag in $NEW_TAG; do
-            MSG="    - New tag! [$tag]($GOOGLEGIT/$repo/%2B/$tag)%0A$MSG"
+            if echo $tag | grep ^-; then
+                MSG="    - New tag: [$(sed -n 's/^-//p' <<< $tag)]($GOOGLEGIT/$repo/%2B/$tag)%0A$MSG"
+            elif echo $tag | grep ^+; then
+                MSG="    - Tag removed: $(sed -n 's/^+//p' <<< $tag)%0A$MSG"
+            fi
         done
         MSG="%0A*$repo*%0A$MSG"
     fi
