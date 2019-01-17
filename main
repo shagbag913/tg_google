@@ -29,7 +29,7 @@ tags() {
     OLD_TAGS=$(cat $TAG_FILE)
     NEW_TAGS=$(git ls-remote --refs --tags $GOOGLEGIT/$1 | sed -n 's/.*refs\/tags\///p')
     if [[ "$NEW_TAGS" != "$OLD_TAGS" && -n "$NEW_TAGS" ]]; then
-        NEW_TAG=$(diff -u <(echo "$NEW_TAGS") <(echo "$OLD_TAGS") | sed -n '1!p' | sed -n 's/^-//p')
+        NEW_TAG=$(diff -u <(echo "$NEW_TAGS") <(echo "$OLD_TAGS") | tail -n +3 | sed -n 's/^-//p')
         echo "$NEW_TAGS" > $TAG_FILE
     else
         return 1
