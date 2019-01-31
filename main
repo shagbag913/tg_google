@@ -64,9 +64,11 @@ for repo in "${REPOS[@]}"; do
     if tags $repo; then
         for tag in $NEW_TAG; do
             if echo $tag | grep ^-; then
-                MSG="    - New tag: [$(sed -n 's/^-//p' <<< $tag)]($GOOGLEGIT/$repo/%2B/$tag)%0A$MSG"
+                TAG=$(sed -n 's/^-//p' <<< $tag)
+                MSG="    - New tag: [$TAG]($GOOGLEGIT/$repo/%2B/$TAG)%0A$MSG"
             elif echo $tag | grep ^+; then
-                MSG="    - Tag removed: $(sed -n 's/^+//p' <<< $tag)%0A$MSG"
+                TAG=$(sed -n 's/^+//p' <<< $tag)
+                MSG="    - Tag removed: $TAG%0A$MSG"
             fi
         done
         MSG="%0A*$repo*%0A$MSG"
