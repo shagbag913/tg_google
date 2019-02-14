@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
+DEBUG=$1
+[[ -z $DEBUG ]] && DEBUG=false || cat <<EOF
+##### DEBUG MODE ENABLED #####
+EOF
+
 while :; do
-    ./main
-    sleep 5
+    ./main $DEBUG
+    [[ -z $DEBUG ]] && sleep 10 || sleep 1
 done
