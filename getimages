@@ -17,18 +17,18 @@ wget $FACTIMAGE_URL -P $FACTIMAGE_DIR
 unzip $FACTIMAGE_DIR/$FACTIMAGE_ZIP -d $FACTIMAGE_DIR
 unzip $FACTIMAGE_DIR/$FACTIMAGE_FOLDER/image*.zip -d $FACTIMAGE_DIR/$FACTIMAGE_FOLDER/
 
-if ! gdrive list --query " '$GD_IMAGES_TOP' in parents" | grep $DEVICE && [[ $DEBUG = false ]]; then
-    gdrive mkdir -p $GD_IMAGES_TOP $DEVICE
+if ! trythree gdrive list --query " '$GD_IMAGES_TOP' in parents" | grep $DEVICE && [[ $DEBUG = false ]]; then
+    trythree gdrive mkdir -p $GD_IMAGES_TOP $DEVICE
 fi
 
-GD_DEVICE_IMAGES="$(gdrive list --query " '$GD_IMAGES_TOP' in parents" | grep $DEVICE | cut -d ' ' -f 1)"
-GD_DEVICE_BUILDID="$(gdrive mkdir -p $GD_DEVICE_IMAGES $BUILDID | cut -d ' ' -f 2)"
-DLURL="$(gdrive info $(gdrive list --order "modifiedTime desc" -m 1 \
+GD_DEVICE_IMAGES="$(trythree gdrive list --query " '$GD_IMAGES_TOP' in parents" | grep $DEVICE | cut -d ' ' -f 1)"
+GD_DEVICE_BUILDID="$(trythree gdrive mkdir -p $GD_DEVICE_IMAGES $BUILDID | cut -d ' ' -f 2)"
+DLURL="$(trythree gdrive info $(trythree gdrive list --order "modifiedTime desc" -m 1 \
                 | tail -n 1 | cut -d' ' -f 1) | sed -n 's/ViewUrl: //p')"
 
 if [[ $DEBUG = false ]]; then
     for i in "vendor.img" "bootloader*.img" "radio*.img"; do
-        gdrive upload -p $GD_DEVICE_BUILDID $FACTIMAGE_DIR/$FACTIMAGE_FOLDER/$i
+        trythree gdrive upload -p $GD_DEVICE_BUILDID $FACTIMAGE_DIR/$FACTIMAGE_FOLDER/$i
     done
     tg_bot -p pm -p au -m "*$DEVICE*:%0A\`$BUILDID\` bootloader, vendor, and radio images uploaded!%0A    - Download: [gdrive]($DLURL)"
 else
