@@ -53,12 +53,6 @@ done
 REPOS=(
     'platform/manifest'
     'kernel/msm'
-    'device/google/marlin'
-    'device/google/crosshatch'
-    'device/google/crosshatch-sepolicy'
-    'device/google/wahoo'
-    'device/google/taimen'
-    'device/google/muskie'
 )
 
 for repo in "${REPOS[@]}"; do
