@@ -7,5 +7,5 @@ EOF
 
 while :; do
     ./main $DEBUG
-    [[ -z $DEBUG ]] && sleep 10 || sleep 1
+    [[ $DEBUG = false ]] && sleep 10 || sleep 1
 done
