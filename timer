@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 DEBUG=$1
-[[ -z $DEBUG ]] && DEBUG=false || cat <<EOF
+[[ -z $DEBUG ]] || cat <<EOF
 ##### DEBUG MODE ENABLED #####
 EOF
 
