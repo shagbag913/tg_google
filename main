@@ -4,11 +4,23 @@
 # tg_bot; from my dotfiles repo https://github.com/shagbag913/dotfiles/blob/master/.bin/tg_bot
 
 DEBUG=$1
+
+##
+# Factory image / OTA download URL's
 FACTURL="https://developers.google.com/android/images"
 OTAURL="https://developers.google.com/android/ota"
+
+##
+# Contents of URL's
 FACTURLCONTENT=$(curl $FACTURL)
 OTAURLCONTENT=$(curl $OTAURL)
+
+##
+# List of supported devices
 DEVICES="crosshatch blueline taimen walleye marlin sailfish ryu angler bullhead"
+
+##
+# Google's sourcecode
 GOOGLEGIT="https://android.googlesource.com"
 
 build_id() {
