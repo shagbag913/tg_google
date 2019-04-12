@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+##
+# Only allow one instance
+while [[ -f /tmp/getimages.lock ]]; do
+    true    # do nothing, keep looping
+done
+
+touch /tmp/getimages.lock
+
 echo "GETIMAGES: fetching images from $1"
 
 DEBUG=$2
@@ -34,3 +42,5 @@ if [[ $DEBUG = false ]]; then
 else
     tg_bot -p pm -m "TEST: *$DEVICE*:%0A\`$BUILDID\` bootloader, vendor, and radio images uploaded!%0A    - Download: no dl link for u"
 fi
+
+rm -rf /tmp/getimages.lock
