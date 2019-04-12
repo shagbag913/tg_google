@@ -6,6 +6,7 @@ DEBUG=$1
 # Factory image / OTA download URL's
 FACTURL="https://developers.google.com/android/images"
 OTAURL="https://developers.google.com/android/ota"
+DPURL="https://developer.android.com/preview/download"
 
 ##
 # Contents of URL's
@@ -19,6 +20,21 @@ DEVICES="crosshatch blueline taimen walleye marlin sailfish ryu angler bullhead"
 ##
 # Google's sourcecode
 GOOGLEGIT="https://android.googlesource.com"
+
+is_dp_month() {
+    # return 1 if it's not march thru august
+    MONTH=$(date +%m | sed -n 's/^0//p')
+    for i in $(seq 3 8); do
+        if [[ $i = $MONTH ]]; then
+            MATCH=true
+        fi
+    done
+    [[ $MATCH = true ]] || return 1
+}
+
+if is_dp_month; then
+    DPURLCONTENT=$(curl $DPURL)
+fi
 
 build_id() {
     BUILDID_FILE="./devices/$1/build_ids"
@@ -46,8 +62,24 @@ tags() {
     fi
 }
 
+dp() {
+    if ! is_dp_month; then return 1; fi
+    URL_FILE="./devices/$1/developer_preview"
+    [[ -d $(dirname $URL_FILE) ]] || mkdir -p $(dirname $URL_FILE)
+    [[ -f $URL_FILE ]] || touch $URL_FILE
+    NEWDPDEVICEURL=$(echo "$DPURLCONTENT" | grep $1 | sed -n 's/.*href=//p' | tr -d '"')
+    OLDDPDEVICEURL=$(cat $URL_FILE)
+    if [[ $NEWDPDEVICEURL = $OLDDPDEVICEURL ]]; then
+        return 1
+    else
+        DPBUILDID=$(echo $NEWDPDEVICEURL | awk -F'[-|-]' '{print $2}')
+        echo $NEWDPDEVICEURL > $URL_FILE
+    fi
+}
+
 for device in $DEVICES; do
     if build_id $device; then
+        EVENT=true
         for id in $NEW_BUILDID; do
             echo "new $id for $device"
             FACT_BUILDURL=$(echo "$FACTURLCONTENT" | sed -n 's/.*<td><a href=\"//p' | tr -d '"' | grep "$device-$id")
@@ -55,8 +87,15 @@ for device in $DEVICES; do
             OTA_BUILDURL=$(echo "$OTAURLCONTENT" | sed -n 's/.*<td><a href=\"//p' | sed -n 's/">.*//p' | grep "$device-ota-$id")
             MSG="\`$id\` has been released.%0A    - Factory image: [Download]($FACT_BUILDURL)%0A    - OTA: [Download]($OTA_BUILDURL)%0A$MSG"
         done
+    fi
+    if dp $device; then
+        EVENT=true
+        MSG="\`$DPBUILDID\` developer preview has been released.%0A    - Factory image: [Download]($NEWDPDEVICEURL)%0A$MSG"
+    fi
+    if [[ $EVENT = true ]]; then
         MSG="%0A*$device*%0A$MSG"
     fi
+    unset EVENT
 done
 
 REPOS=(
