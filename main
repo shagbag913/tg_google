@@ -63,7 +63,7 @@ tags() {
 }
 
 dp() {
-    if ! is_dp_month; then return 1; fi
+    if ! is_dp_month || [[ -z "$DPURLCONTENT" ]]; then return 1; fi
     URL_FILE="./devices/$1/developer_preview"
     [[ -d $(dirname $URL_FILE) ]] || mkdir -p $(dirname $URL_FILE)
     [[ -f $URL_FILE ]] || touch $URL_FILE
