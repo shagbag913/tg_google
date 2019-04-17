@@ -67,13 +67,14 @@ dp() {
     URL_FILE="./devices/$1/developer_preview"
     [[ -d $(dirname $URL_FILE) ]] || mkdir -p $(dirname $URL_FILE)
     [[ -f $URL_FILE ]] || touch $URL_FILE
-    NEWDPDEVICEURL=$(echo "$DPURLCONTENT" | grep $1 | sed -n 's/.*href=//p' | tr -d '"')
-    OLDDPDEVICEURL=$(cat $URL_FILE)
-    if [[ $NEWDPDEVICEURL = $OLDDPDEVICEURL ]]; then
+    NEWDPDEVICEURL=$(echo "$DPURLCONTENT" | grep $1 | sed -n 's/.*href=//p' | tr -d '"' | tr -d ' ')
+    OLDDPDEVICEURL=$(cat $URL_FILE | tr -d ' ')
+    if echo "$OLDDPDEVICEURL" | grep $NEWDPDEVICEURL || \
+        [[ -z $NEWDPDEVICEURL && -z $OLDDPDEVICEURL ]]; then
         return 1
     else
         DPBUILDID=$(echo $NEWDPDEVICEURL | awk -F'[-|-]' '{print $2}')
-        echo $NEWDPDEVICEURL > $URL_FILE
+        echo $NEWDPDEVICEURL >> $URL_FILE
     fi
 }
 
