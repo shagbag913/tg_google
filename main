@@ -44,6 +44,7 @@ build_id() {
     if [[ "$OLD_BUILDIDS" != "$NEW_BUILDIDS" && -n "$NEW_BUILDIDS" ]]; then
         NEW_BUILDID=$(diff -u <(echo "$NEW_BUILDIDS") <(echo "$OLD_BUILDIDS") | sed -n '1!p' | sed -n 's/^-//p')
         echo "$NEW_BUILDIDS" > $BUILDID_FILE
+        echo "$1 new build id: $NEW_BUILDID"
     else
         return 1
     fi
@@ -57,6 +58,7 @@ tags() {
     if [[ "$NEW_TAGS" != "$OLD_TAGS" && -n "$NEW_TAGS" ]]; then
         NEW_TAG=$(diff -u <(echo "$NEW_TAGS") <(echo "$OLD_TAGS") | tail -n +3 | grep -e ^- -e ^+)
         echo "$NEW_TAGS" > $TAG_FILE
+        echo "$1 new tag: $NEW_TAG"
     else
         return 1
     fi
@@ -69,12 +71,13 @@ dp() {
     [[ -f $URL_FILE ]] || touch $URL_FILE
     NEWDPDEVICEURL=$(echo "$DPURLCONTENT" | grep $1 | sed -n 's/.*href=//p' | tr -d '"' | tr -d ' ')
     OLDDPDEVICEURL=$(cat $URL_FILE | tr -d ' ')
-    if echo "$OLDDPDEVICEURL" | grep $NEWDPDEVICEURL || \
+    if echo "$OLDDPDEVICEURL" | grep $NEWDPDEVICEURL &>/dev/null || \
         [[ -z $NEWDPDEVICEURL && -z $OLDDPDEVICEURL ]]; then
         return 1
     else
         DPBUILDID=$(echo $NEWDPDEVICEURL | awk -F'[-|-]' '{print $2}')
         echo $NEWDPDEVICEURL >> $URL_FILE
+        echo "$1 new developer preview: $NEWDPDEVICEURL"
     fi
 }
 
@@ -82,7 +85,6 @@ for device in $DEVICES; do
     if build_id $device; then
         EVENT=true
         for id in $NEW_BUILDID; do
-            echo "new $id for $device"
             FACT_BUILDURL=$(echo "$FACTURLCONTENT" | sed -n 's/.*<td><a href=\"//p' | tr -d '"' | grep "$device-$id")
             FACTIMAGE_URLS="$FACTIMAGE_URLS $FACT_BUILDURL"
             OTA_BUILDURL=$(echo "$OTAURLCONTENT" | sed -n 's/.*<td><a href=\"//p' | sed -n 's/">.*//p' | grep "$device-ota-$id")
@@ -107,10 +109,10 @@ REPOS=(
 for repo in "${REPOS[@]}"; do
     if tags $repo; then
         for tag in $NEW_TAG; do
-            if echo $tag | grep ^-; then
+            if echo $tag | grep ^- &>/dev/null; then
                 TAG=$(sed -n 's/^-//p' <<< $tag)
                 MSG="    - New tag: [$TAG]($GOOGLEGIT/$repo/%2B/$TAG)%0A$MSG"
-            elif echo $tag | grep ^+; then
+            elif echo $tag | grep ^+ &>/dev/null; then
                 TAG=$(sed -n 's/^+//p' <<< $tag)
                 TAG=$(sed 's/_/\\_/p' <<< $TAG | head -n 1)
                 MSG="    - Tag removed: $TAG%0A$MSG"
@@ -130,7 +132,7 @@ fi
 
 if [[ -n $FACTIMAGE_URLS ]]; then
     for i in $FACTIMAGE_URLS; do
-        sleep 1
+        sleep 0.5
         ./getimages $i $DEBUG &
     done
 fi

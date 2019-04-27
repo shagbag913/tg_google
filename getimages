@@ -3,6 +3,7 @@
 ##
 # Only allow one instance
 while [[ -f /tmp/getimages.lock ]]; do
+    sleep 1
     true    # do nothing, keep looping
 done
 
