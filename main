@@ -89,6 +89,7 @@ for device in $DEVICES; do
         EVENT=true
         for id in $NEW_BUILDID; do
             FACT_BUILDURL=$(echo "$FACTURLCONTENT" | sed -n 's/.*<td><a href=\"//p' | tr -d '"' | grep "$device-$id")
+            OTA_BUILDURL=$(echo "$OTAURLCONTENT" | sed -n 's/.*<td><a href=\"//p' | sed -n 's/">.*//p' | grep "$device-ota-$id")
             until [[ -n $OTA_BUILDURL ]]; do
                 fetch_ota_url_content
                 OTA_BUILDURL=$(echo "$OTAURLCONTENT" | sed -n 's/.*<td><a href=\"//p' | sed -n 's/">.*//p' | grep "$device-ota-$id")
@@ -104,6 +105,7 @@ for device in $DEVICES; do
         MSG="%0A*$device*%0A$MSG"
     fi
     unset EVENT
+    unset OTA_BUILDURL
 done
 
 REPOS=(
