@@ -129,10 +129,3 @@ if [[ -n $MSG ]]; then
         tg_bot -p pm -m "$MSG"
     fi
 fi
-
-if [[ -n $FACTIMAGE_URLS ]]; then
-    for i in $FACTIMAGE_URLS; do
-        sleep 0.5
-        ./getimages $i $DEBUG &
-    done
-fi
