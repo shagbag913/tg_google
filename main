@@ -11,7 +11,6 @@ DPURL="https://developer.android.com/preview/download"
 ##
 # Contents of URL's
 FACTURLCONTENT=$(curl $FACTURL)
-OTAURLCONTENT=$(curl $OTAURL)
 
 ##
 # List of supported devices
@@ -20,6 +19,10 @@ DEVICES="crosshatch blueline taimen walleye marlin sailfish ryu angler bullhead"
 ##
 # Google's sourcecode
 GOOGLEGIT="https://android.googlesource.com"
+
+fetch_ota_url_content() {
+    OTAURLCONTENT=$(curl $OTAURL)
+}
 
 is_dp_month() {
     # return 1 if it's not march thru august
@@ -86,8 +89,10 @@ for device in $DEVICES; do
         EVENT=true
         for id in $NEW_BUILDID; do
             FACT_BUILDURL=$(echo "$FACTURLCONTENT" | sed -n 's/.*<td><a href=\"//p' | tr -d '"' | grep "$device-$id")
-            FACTIMAGE_URLS="$FACTIMAGE_URLS $FACT_BUILDURL"
-            OTA_BUILDURL=$(echo "$OTAURLCONTENT" | sed -n 's/.*<td><a href=\"//p' | sed -n 's/">.*//p' | grep "$device-ota-$id")
+            until [[ -n $OTA_BUILDURL ]]; do
+                fetch_ota_url_content
+                OTA_BUILDURL=$(echo "$OTAURLCONTENT" | sed -n 's/.*<td><a href=\"//p' | sed -n 's/">.*//p' | grep "$device-ota-$id")
+            done
             MSG="\`$id\` has been released.%0A    - Factory image: [Download]($FACT_BUILDURL)%0A    - OTA: [Download]($OTA_BUILDURL)%0A$MSG"
         done
     fi
