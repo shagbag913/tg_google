@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+MESSAGE=$1
+
+if [[ -z $TGBOTTOKEN ]]; then
+    echo 'You must set your telegram bot token like so:'
+    echo 'export TGBOTTOKEN="telegram bot token here'
+fi
+if [[ -z $GOOGLECHATID ]]; then
+    echo 'You must set your chat id like so:'
+    echo 'export GOOGLECHATID="chat id here'
+fi
+if [[ -z $MESSAGE ]]; then
+    echo "You must specify a message!"
+    exit 1
+fi
+
+URL="https://api.telegram.org/bot$TGBOTTOKEN/sendMessage"
+
+curl -s -X POST $URL -d chat_id=$GOOGLECHATID -d text="$MESSAGE" -d parse_mode="Markdown" &>/dev/null
+echo "Notified $GOOGLECHATID"

@@ -2,6 +2,8 @@
 #
 DEBUG=$1
 
+DIR=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
+
 ##
 # Factory image / OTA download URL's
 FACTURL="https://developers.google.com/android/images"
@@ -130,9 +132,5 @@ for repo in "${REPOS[@]}"; do
 done
 
 if [[ -n $MSG ]]; then
-    if [[ $DEBUG = false ]]; then
-        tg_bot -p pm -p au -m "$MSG"
-    else
-        tg_bot -p pm -m "$MSG"
-    fi
+    $DIR/tg_bot "$MSG"
 fi
