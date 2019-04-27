@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 
+DIR=$(cd $(dirname ${BASH_SOURCE[0]}) && pwd)
+
 DEBUG=$1
 [[ -z $DEBUG ]] && DEBUG=false || cat <<EOF
 ##### DEBUG MODE ENABLED #####
 EOF
 
 while :; do
-    ./main $DEBUG
+    $DIR/main $DEBUG
     [[ $DEBUG = false ]] && sleep 10 || sleep 1
 done
